@@ -82,16 +82,6 @@ export const HamburgerMenuPage: React.FC<HamburgerMenuPageProps> = ({
       status: `${gameState.achievements?.filter(a => a.unlocked)?.length || 0}/${gameState.achievements?.length || 0} unlocked`
     },
     {
-      id: 'progression',
-      name: 'Character Progress',
-      icon: TrendingUp,
-      color: 'text-purple-400',
-      bgColor: 'from-purple-900/50 to-indigo-900/50',
-      borderColor: 'border-purple-500/50',
-      description: 'Level up and unlock new skills',
-      status: `Level ${gameState.progression?.level || 1} (${gameState.progression?.skillPoints || 0} SP)`
-    },
-    {
       id: 'settings',
       name: 'Settings',
       icon: Settings,
