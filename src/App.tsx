@@ -170,16 +170,12 @@ function App() {
 
   // ONLY show modals if NOT in combat
   if (!gameState.inCombat) {
-    // Show offline progress modal if there are rewards
-    if (gameState.offlineProgress?.offlineCoins > 0 || gameState.offlineProgress?.offlineGems > 0) {
-      if (currentModal !== 'offlineProgress') {
-        setCurrentModal('offlineProgress');
-      }
+  // Show offline progress modal if there are rewards
+  if (gameState.offlineProgress?.offlineCoins > 0 || gameState.offlineProgress?.offlineGems > 0) {
+    if (currentModal !== 'offlineProgress') {
+      setCurrentModal('offlineProgress');
     }
-    // Show daily rewards modal if available (only after offline progress is handled)
-    else if (gameState.dailyRewards?.availableReward && currentModal !== 'dailyRewards') {
-      setCurrentModal('dailyRewards');
-    }
+  }
   }
 
   // Show welcome screen for new players
