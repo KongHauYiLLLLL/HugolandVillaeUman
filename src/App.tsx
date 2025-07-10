@@ -511,16 +511,7 @@ function App() {
             />
           </Suspense>
         );
-      case 'dailyRewards':
-        return (
-          <Suspense fallback={<SuspenseLoader />}>
-            <LazyDailyRewards
-              dailyRewards={gameState.dailyRewards}
-              onClaimReward={claimDailyReward}
-              onClose={() => setCurrentModal(null)}
-            />
-          </Suspense>
-        );
+      case 'resetConfirm':
       case 'offlineProgress':
         return (
           <Suspense fallback={<SuspenseLoader />}>
