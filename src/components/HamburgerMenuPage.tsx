@@ -140,15 +140,6 @@ export const HamburgerMenuPage: React.FC<HamburgerMenuPageProps> = ({
             onClose={() => setActiveSection(null)}
           />
         );
-      case 'progression':
-        return (
-          <ProgressionPanel
-            progression={gameState.progression}
-            onUpgradeSkill={onUpgradeSkill}
-            onPrestige={onPrestige}
-            onClose={() => setActiveSection(null)}
-          />
-        );
       case 'settings':
         return (
           <GameSettings
