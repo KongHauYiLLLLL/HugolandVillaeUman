@@ -401,15 +401,6 @@ function App() {
                 </button>
                 
                 <button
-                  onClick={() => setCurrentModal('dailyRewards')}
-                  className="px-3 sm:px-4 py-2 rounded-lg font-semibold text-white bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 transition-all duration-200 flex items-center gap-2 text-xs sm:text-sm shadow-md"
-                >
-                  <Gift className="w-3 h-3 sm:w-4 sm:h-4" />
-                  <span className="hidden sm:inline">Daily Rewards</span>
-                  <span className="sm:hidden">Daily</span>
-                </button>
-                
-                <button
                   onClick={handleResetGame}
                   className="px-3 sm:px-4 py-2 rounded-lg font-semibold text-white bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 transition-all duration-200 flex items-center gap-2 text-xs sm:text-sm shadow-md"
                 >
