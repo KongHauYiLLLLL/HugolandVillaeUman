@@ -60,7 +60,7 @@ export const PlayerStats: React.FC<PlayerStatsProps> = ({
           </div>
           <div className="w-full bg-gray-700 rounded-full h-4">
             <div 
-              className="bg-gradient-to-r from-green-500 to-green-400 h-4 rounded-full transition-all duration-500"
+              className="bg-gradient-to-r from-red-500 to-red-400 h-4 rounded-full transition-all duration-500"
               style={{ width: `${(playerStats.hp / playerStats.maxHp) * 100}%` }}
             />
           </div>
