@@ -198,7 +198,6 @@ const createInitialGameState = (): GameState => ({
   },
   randomEvents: {
     currentEvent: null,
-    nextEvent: null,
     nextEventTime: new Date(Date.now() + Math.random() * 2 * 60 * 60 * 1000) // Random time within 2 hours
   }
 });
