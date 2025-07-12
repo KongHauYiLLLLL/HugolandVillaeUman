@@ -15,7 +15,6 @@ const LoadingFallback = () => (
 export const LazyStatistics = lazy(() => import('./Statistics').then(module => ({ default: module.Statistics })));
 export const LazyAchievements = lazy(() => import('./Achievements').then(module => ({ default: module.Achievements })));
 export const LazyCollectionBook = lazy(() => import('./CollectionBook').then(module => ({ default: module.CollectionBook })));
-export const LazyEnhancedGameModes = lazy(() => import('./EnhancedGameModes').then(module => ({ default: module.EnhancedGameModes })));
 export const LazyPokyegMarket = lazy(() => import('./PokyegMarket').then(module => ({ default: module.PokyegMarket })));
 export const LazyTutorial = lazy(() => import('./Tutorial').then(module => ({ default: module.Tutorial })));
 export const LazyCheatPanel = lazy(() => import('./CheatPanel').then(module => ({ default: module.CheatPanel })));

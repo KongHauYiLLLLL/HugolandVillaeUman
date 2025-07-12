@@ -12,13 +12,13 @@ import { Shield, Package, User, Play, RotateCcw, Crown, Gift, Pickaxe, Menu, Arr
 import { animateButtonClick, initGSAPAnimations } from './utils/gsapAnimations';
 import { FunFactsPopup } from './components/FunFactsPopup';
 import { LoadingSpinner } from './components/LoadingSpinner';
+import { RandomEvents } from './components/RandomEvents';
 
 // Lazy load heavy components
 import {
   LazyStatistics,
   LazyAchievements,
   LazyCollectionBook,
-  LazyEnhancedGameModes,
   LazyPokyegMarket,
   LazyTutorial,
   LazyCheatPanel,
@@ -35,7 +35,7 @@ import {
 } from './components/LazyComponents';
 
 type GameView = 'stats' | 'shop' | 'inventory' | 'mining' | 'merchant' | 'menu';
-type ModalView = 'collection' | 'gameMode' | 'pokyegMarket' | 'tutorial' | 'cheats' | 'resetConfirm' | 'dailyRewards' | 'offlineProgress' | 'bulkActions' | null;
+type ModalView = 'collection' | 'pokyegMarket' | 'tutorial' | 'cheats' | 'resetConfirm' | 'dailyRewards' | 'offlineProgress' | 'bulkActions' | 'randomEvents' | null;
 
 // Loading component for Suspense fallback
 const SuspenseLoader = () => (
@@ -392,15 +392,6 @@ function App() {
               
               <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
                 <button
-                  onClick={() => setCurrentModal('gameMode')}
-                  className="px-3 sm:px-4 py-2 rounded-lg font-semibold text-white bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 transition-all duration-200 flex items-center gap-2 text-xs sm:text-sm shadow-md"
-                >
-                  <Play className="w-3 h-3 sm:w-4 sm:h-4" />
-                  <span className="hidden sm:inline">Game Mode</span>
-                  <span className="sm:hidden">Mode</span>
-                </button>
-                
-                <button
                   onClick={handleResetGame}
                   className="px-3 sm:px-4 py-2 rounded-lg font-semibold text-white bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 transition-all duration-200 flex items-center gap-2 text-xs sm:text-sm shadow-md"
                 >
@@ -413,6 +404,17 @@ function App() {
           </div>
         );
       case 'shop':
+        // Check if market shutdown event is active
+        if (gameState.randomEvents?.currentEvent?.type === 'market_shutdown') {
+          return (
+            <div className="bg-gradient-to-br from-red-900 via-gray-900 to-red-900 p-6 rounded-lg shadow-2xl text-center">
+              <div className="text-6xl mb-4">🚫</div>
+              <h2 className="text-white font-bold text-2xl mb-4">Market Shutdown</h2>
+              <p className="text-red-300 text-lg mb-4">The shop is temporarily closed due to a market shutdown event.</p>
+              <p className="text-gray-400 text-sm">Come back when the event ends!</p>
+            </div>
+          );
+        }
         return <Shop coins={gameState.coins} onOpenChest={openChest} onDiscardItem={discardItem} isPremium={gameState.isPremium} />;
       case 'inventory':
         return (
@@ -472,16 +474,6 @@ function App() {
             />
           </Suspense>
         );
-      case 'gameMode':
-        return (
-          <Suspense fallback={<SuspenseLoader />}>
-            <LazyEnhancedGameModes
-              currentMode={gameState.gameMode}
-              onSelectMode={setGameMode}
-              onClose={() => setCurrentModal(null)}
-            />
-          </Suspense>
-        );
       case 'pokyegMarket':
         return (
           <Suspense fallback={<SuspenseLoader />}>
@@ -511,7 +503,6 @@ function App() {
             />
           </Suspense>
         );
-      case 'resetConfirm':
       case 'offlineProgress':
         return (
           <Suspense fallback={<SuspenseLoader />}>
@@ -534,6 +525,13 @@ function App() {
               onClose={() => setCurrentModal(null)}
             />
           </Suspense>
+        );
+      case 'randomEvents':
+        return (
+          <RandomEvents
+            randomEvents={gameState.randomEvents}
+            onClose={() => setCurrentModal(null)}
+          />
         );
       case 'resetConfirm':
         return (
@@ -603,6 +601,15 @@ function App() {
               )}
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
+              {/* Random Events Button */}
+              <button
+                onClick={() => setCurrentModal('randomEvents')}
+                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-500 transition-all duration-200 text-xs sm:text-sm shadow-md"
+              >
+                <Zap className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Events</span>
+              </button>
+              
               {/* Only show bulk actions button when not in combat and not on menu page */}
               {!gameState.inCombat && currentView !== 'menu' && (
                 <button
@@ -685,6 +692,17 @@ function App() {
         isOpen={showFunFacts} 
         onClose={() => setShowFunFacts(false)} 
       />
+      
+      {/* Random Events Status */}
+      {gameState.randomEvents?.currentEvent && (
+        <div className="fixed top-20 right-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-3 rounded-lg shadow-lg z-40 max-w-xs">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-lg">{gameState.randomEvents.currentEvent.icon}</span>
+            <span className="font-bold text-sm">{gameState.randomEvents.currentEvent.name}</span>
+          </div>
+          <p className="text-xs opacity-90">{gameState.randomEvents.currentEvent.description}</p>
+        </div>
+      )}
     </div>
   );
 }
