@@ -162,7 +162,29 @@ export const Combat: React.FC<CombatProps> = ({
     if (onUseSkipCard && adventureSkills?.selectedSkill?.type === 'skip_card' && !adventureSkills.skillEffects.skipCardUsed && currentQuestion) {
       onUseSkipCard();
       // Automatically answer correctly
-      handleAnswer(currentQuestion.correctAnswer);
+      if (currentQuestion.type === 'multiple-choice') {
+        handleAnswer(currentQuestion.correctAnswer as number);
+      } else {
+        // For slider, type-answer, and other types, simulate correct answer
+        setIsAnswering(true);
+        setLastAnswerCorrect(true);
+        setShowResult(true);
+        
+        setTimeout(() => {
+          onAttack(true, currentQuestion.category);
+          
+          const newQuestion = getQuestionByZone(enemy.zone);
+          setCurrentQuestion(newQuestion);
+          setSelectedAnswer(null);
+          setTypedAnswer('');
+          setSliderValue(newQuestion.sliderRange?.min || 0);
+          setReorderedWords(newQuestion.wordsToReorder || []);
+          setIsAnswering(false);
+          setTimeLeft(questionTime);
+          setShowResult(false);
+          setLastAnswerCorrect(null);
+        }, 2000);
+      }
     }
   };
 
