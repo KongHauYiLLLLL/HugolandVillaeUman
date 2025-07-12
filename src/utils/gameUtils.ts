@@ -88,7 +88,7 @@ export const generateWeapon = (forceChroma = false, forceRarity?: string, forceE
   const upgradeCostMap = { common: 5, rare: 10, epic: 20, legendary: 40, mythical: 50 };
   let baseAtk = baseAtkMap[rarity] + Math.floor(Math.random() * 10);
   
-  const isEnchanted = forceEnchanted || Math.random() < 0.05;
+  const isEnchanted = forceEnchanted || Math.random() < 0.4; // 40% chance
   let enchantmentMultiplier = 1;
   
   if (isEnchanted) {
@@ -144,7 +144,7 @@ export const generateArmor = (forceChroma = false, forceRarity?: string, forceEn
   const upgradeCostMap = { common: 5, rare: 10, epic: 20, legendary: 40, mythical: 50 };
   let baseDef = baseDefMap[rarity] + Math.floor(Math.random() * 5);
   
-  const isEnchanted = forceEnchanted || Math.random() < 0.05;
+  const isEnchanted = forceEnchanted || Math.random() < 0.4; // 40% chance
   let enchantmentMultiplier = 1;
   
   if (isEnchanted) {
@@ -184,8 +184,8 @@ export const generateRelicItem = (forceType?: 'weapon' | 'armor'): RelicItem => 
       type: 'weapon',
       baseAtk,
       level: 1,
-      upgradeCost: 50, // Increased from 25
-      cost: baseAtk * 15, // Increased from 5x to 15x (3x more expensive)
+      upgradeCost: 50,
+      cost: baseAtk * 30, // 2x more expensive (was 15x, now 30x)
       description: 'A powerful relic weapon from ancient times'
     };
   } else {
@@ -196,8 +196,8 @@ export const generateRelicItem = (forceType?: 'weapon' | 'armor'): RelicItem => 
       type: 'armor',
       baseDef,
       level: 1,
-      upgradeCost: 50, // Increased from 25
-      cost: baseDef * 15, // Increased from 5x to 15x (3x more expensive)
+      upgradeCost: 50,
+      cost: baseDef * 30, // 2x more expensive (was 15x, now 30x)
       description: 'A powerful relic armor from ancient times'
     };
   }

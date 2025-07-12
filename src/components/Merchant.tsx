@@ -162,43 +162,25 @@ export const Merchant: React.FC<MerchantProps> = ({
             </div>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="text-center bg-black/20 p-3 rounded-lg">
-              <p className="text-orange-400 font-semibold text-sm">Current</p>
-              <p className="text-white text-2xl sm:text-3xl font-bold">{merchant.hugollandFragments}/3</p>
-            </div>
-            <div className="text-center bg-black/20 p-3 rounded-lg">
-              <p className="text-yellow-400 font-semibold text-sm">Total Earned</p>
-              <p className="text-white text-2xl sm:text-3xl font-bold">{merchant.totalFragmentsEarned}</p>
-            </div>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="mt-4">
-            <div className="w-full bg-gray-700 rounded-full h-3">
-              <div 
-                className="bg-gradient-to-r from-orange-500 to-yellow-500 h-3 rounded-full transition-all duration-500"
-                style={{ width: `${(merchant.hugollandFragments / 3) * 100}%` }}
-              />
-            </div>
-            <p className="text-center text-gray-300 text-xs sm:text-sm mt-2">
-              {3 - merchant.hugollandFragments} more fragments needed
-            </p>
+          <div className="text-center bg-black/20 p-4 rounded-lg">
+            <p className="text-orange-400 font-semibold text-sm mb-2">Current Fragments</p>
+            <p className="text-white text-3xl sm:text-4xl font-bold">{merchant.hugollandFragments}</p>
+            <p className="text-yellow-400 text-sm mt-2">Total Earned: {merchant.totalFragmentsEarned}</p>
           </div>
         </div>
 
         {/* Purchase Button */}
         <button
           onClick={handleSpendFragments}
-          disabled={merchant.hugollandFragments < 3}
+          disabled={merchant.hugollandFragments < 1}
           className={`w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-bold text-white transition-all duration-300 transform flex items-center gap-3 justify-center text-base sm:text-lg shadow-lg ${
-            merchant.hugollandFragments >= 3
+            merchant.hugollandFragments >= 1
               ? 'bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 hover:scale-105 shadow-orange-500/25'
               : 'bg-gray-600 cursor-not-allowed opacity-50'
           }`}
         >
           <Package className="w-5 h-5 sm:w-6 sm:h-6" />
-          {merchant.hugollandFragments >= 3 ? 'Trade 3 Fragments' : 'Need More Fragments'}
+          {merchant.hugollandFragments >= 1 ? 'Trade Fragments' : 'Need More Fragments'}
         </button>
 
         {/* Info Section */}

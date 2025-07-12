@@ -124,7 +124,7 @@ const createInitialGameState = (): GameState => ({
     totalGrowthBonus: 0,
     seedCost: 1000,
     waterCost: 1000,
-    maxGrowthCm: 100
+    maxGrowthCm: Infinity
   },
   settings: {
     colorblindMode: false,
@@ -195,6 +195,11 @@ const createInitialGameState = (): GameState => ({
     lastFragmentZone: 0,
     showRewardModal: false,
     availableRewards: []
+  },
+  randomEvents: {
+    currentEvent: null,
+    nextEvent: null,
+    nextEventTime: new Date(Date.now() + Math.random() * 2 * 60 * 60 * 1000) // Random time within 2 hours
   }
 });
 
@@ -259,6 +264,68 @@ const generateAdventureSkills = (): AdventureSkill[] => {
     ...skill,
     id: `skill_${index}_${Date.now()}`
   }));
+};
+
+// Random Events System
+const eventTypes = [
+  {
+    type: 'planting_season',
+    name: 'Planting Season',
+    description: 'Plants grow 5x faster',
+    icon: '🌱'
+  },
+  {
+    type: 'meteor_shower',
+    name: 'Meteor Shower',
+    description: 'All stats increased by 50%',
+    icon: '☄️'
+  },
+  {
+    type: 'mining_frenzy',
+    name: 'Mining Frenzy',
+    description: 'Gem drops are 7x and shiny gems are 3x more likely',
+    icon: '⛏️'
+  },
+  {
+    type: 'relics_rundown',
+    name: 'Relics Rundown',
+    description: 'Relics cost half the original price',
+    icon: '🏺'
+  },
+  {
+    type: 'market_shutdown',
+    name: 'Market Shutdown',
+    description: 'The shop is disabled',
+    icon: '🚫'
+  },
+  {
+    type: 'sneaky_merchant',
+    name: 'Sneaky Merchant',
+    description: 'Merchant fragment trades only cost 1 fragment!',
+    icon: '🥷'
+  },
+  {
+    type: 'treble',
+    name: 'Treble',
+    description: 'Health, attack and defense is tripled!',
+    icon: '💪'
+  }
+];
+
+const generateRandomEvent = (): RandomEvent => {
+  const eventType = eventTypes[Math.floor(Math.random() * eventTypes.length)];
+  const startTime = new Date();
+  const endTime = new Date(startTime.getTime() + 15 * 60 * 1000); // 15 minutes
+  
+  return {
+    id: Math.random().toString(36).substr(2, 9),
+    name: eventType.name,
+    description: eventType.description,
+    type: eventType.type as any,
+    startTime,
+    endTime,
+    icon: eventType.icon
+  };
 };
 
 const useGameState = () => {
@@ -342,6 +409,38 @@ const useGameState = () => {
       saveGameState(gameState);
     }
   }, [gameState, isLoading, saveGameState]);
+
+  // Random Events Effect
+  useEffect(() => {
+    if (!gameState) return;
+
+    const checkEvents = () => {
+      const now = new Date();
+      
+      setGameState(prev => {
+        if (!prev) return prev;
+        
+        let newState = { ...prev };
+        
+        // Check if current event has ended
+        if (newState.randomEvents.currentEvent && now > newState.randomEvents.currentEvent.endTime) {
+          newState.randomEvents.currentEvent = null;
+        }
+        
+        // Check if it's time for the next event
+        if (!newState.randomEvents.currentEvent && now >= newState.randomEvents.nextEventTime) {
+          newState.randomEvents.currentEvent = generateRandomEvent();
+          // Schedule next event (random time within 2 hours)
+          newState.randomEvents.nextEventTime = new Date(now.getTime() + Math.random() * 2 * 60 * 60 * 1000);
+        }
+        
+        return newState;
+      });
+    };
+
+    const interval = setInterval(checkEvents, 1000); // Check every second
+    return () => clearInterval(interval);
+  }, [gameState]);
 
   const startCombat = useCallback(() => {
     if (!gameState) return;
@@ -556,6 +655,13 @@ const useGameState = () => {
         }
       }
 
+      // Check if player needs >5 correct answers and absorb 10% enemy power
+      if (newCorrectAnswers > 5) {
+        const powerAbsorbed = Math.floor(enemy.atk * 0.1);
+        playerStats.atk += powerAbsorbed;
+        combatLog.push(`You absorb ${powerAbsorbed} attack power from the enemy!`);
+      }
+
       // Check if enemy is defeated
       if (enemy.hp <= 0) {
         // Calculate coins using new formula: correct answers * (HP * 100 / 300)
@@ -568,6 +674,30 @@ const useGameState = () => {
         
         combatLog.push(`${enemy.name} defeated!`);
         combatLog.push(`You earned ${coinReward} coins and ${gemReward} gems!`);
+        
+        // Enemy drops items after zone 10
+        if (newState.zone > 10 && Math.random() < 0.3) { // 30% chance
+          const isWeapon = Math.random() < 0.5;
+          const item = isWeapon ? generateWeapon() : generateArmor();
+          
+          if (isWeapon) {
+            newState.inventory.weapons = [...newState.inventory.weapons, item as Weapon];
+          } else {
+            newState.inventory.armor = [...newState.inventory.armor, item as Armor];
+          }
+          
+          combatLog.push(`${enemy.name} dropped a ${item.name}!`);
+          
+          // Update collection book
+          if (isWeapon) {
+            newState.collectionBook.weapons[item.name] = true;
+            newState.collectionBook.totalWeaponsFound += 1;
+          } else {
+            newState.collectionBook.armor[item.name] = true;
+            newState.collectionBook.totalArmorFound += 1;
+          }
+          newState.collectionBook.rarityStats[item.rarity] += 1;
+        }
         
         // Update statistics
         newState.statistics = {
@@ -1010,8 +1140,17 @@ const useGameState = () => {
   const mineGem = useCallback((x: number, y: number): { gems: number; shinyGems: number } | null => {
     if (!gameState) return null;
 
-    const isShiny = Math.random() < 0.05;
-    const gems = isShiny ? 0 : 1;
+    // Apply mining frenzy event effects
+    let gemMultiplier = 1;
+    let shinyChance = 0.05;
+    
+    if (gameState.randomEvents.currentEvent?.type === 'mining_frenzy') {
+      gemMultiplier = 7;
+      shinyChance = 0.15; // 3x more likely (0.05 * 3 = 0.15)
+    }
+    
+    const isShiny = Math.random() < shinyChance;
+    const gems = isShiny ? 0 : gemMultiplier;
     const shinyGems = isShiny ? 1 : 0;
 
     setGameState(prev => prev ? {
@@ -1050,7 +1189,15 @@ const useGameState = () => {
     if (!gameState) return false;
 
     const relic = gameState.yojefMarket.items.find(r => r.id === relicId);
-    if (!relic || gameState.gems < relic.cost) return false;
+    if (!relic) return false;
+    
+    // Apply relics rundown event (half price)
+    let cost = relic.cost;
+    if (gameState.randomEvents.currentEvent?.type === 'relics_rundown') {
+      cost = Math.floor(cost / 2);
+    }
+    
+    if (gameState.gems < cost) return false;
 
     setGameState(prev => {
       if (!prev) return prev;
@@ -1065,7 +1212,7 @@ const useGameState = () => {
       
       return {
         ...prev,
-        gems: prev.gems - relic.cost,
+        gems: prev.gems - cost,
         inventory: {
           ...prev.inventory,
           relics: [...prev.inventory.relics, relic]
@@ -1416,7 +1563,13 @@ const useGameState = () => {
   }, []);
 
   const spendFragments = useCallback((): boolean => {
-    if (!gameState || gameState.merchant.hugollandFragments < 3) return false;
+    if (!gameState) return false;
+    
+    // Check if sneaky merchant event is active
+    const isSneakyMerchant = gameState.randomEvents.currentEvent?.type === 'sneaky_merchant';
+    const requiredFragments = isSneakyMerchant ? 1 : 3;
+    
+    if (gameState.merchant.hugollandFragments < requiredFragments) return false;
 
     // Generate 3 random rewards
     const rewards: MerchantReward[] = [
@@ -1453,7 +1606,7 @@ const useGameState = () => {
         ...prev,
         merchant: {
           ...prev.merchant,
-          hugollandFragments: prev.merchant.hugollandFragments - 3,
+          hugollandFragments: prev.merchant.hugollandFragments - requiredFragments,
           showRewardModal: true,
           availableRewards: rewards
         }
@@ -1497,6 +1650,40 @@ const useGameState = () => {
     });
   }, []);
 
+  // Garden growth effect with events
+  useEffect(() => {
+    if (!gameState?.gardenOfGrowth.isPlanted) return;
+
+    const growthInterval = setInterval(() => {
+      setGameState(prev => {
+        if (!prev?.gardenOfGrowth.isPlanted || prev.gardenOfGrowth.waterHoursRemaining <= 0) return prev;
+        
+        // Base growth rate: 1cm per hour
+        let growthRate = 1 / 3600; // per second
+        
+        // Apply planting season event (5x faster)
+        if (prev.randomEvents.currentEvent?.type === 'planting_season') {
+          growthRate *= 5;
+        }
+        
+        const newGrowthCm = prev.gardenOfGrowth.growthCm + growthRate;
+        const newWaterHours = Math.max(0, prev.gardenOfGrowth.waterHoursRemaining - (1 / 3600));
+        
+        return {
+          ...prev,
+          gardenOfGrowth: {
+            ...prev.gardenOfGrowth,
+            growthCm: newGrowthCm,
+            waterHoursRemaining: newWaterHours,
+            totalGrowthBonus: newGrowthCm * 5 // 5% per cm
+          }
+        };
+      });
+    }, 1000);
+
+    return () => clearInterval(growthInterval);
+  }, [gameState?.gardenOfGrowth.isPlanted]);
+
   // Calculate total stats including equipment and bonuses
   const calculateTotalStats = useCallback(() => {
     if (!gameState) return { hp: 300, maxHp: 300, atk: 50, def: 20 };
@@ -1504,6 +1691,19 @@ const useGameState = () => {
     let totalAtk = gameState.playerStats.baseAtk;
     let totalDef = gameState.playerStats.baseDef;
     let totalHp = gameState.playerStats.baseHp;
+
+    // Apply random event effects
+    if (gameState.randomEvents.currentEvent?.type === 'meteor_shower') {
+      totalAtk = Math.floor(totalAtk * 1.5);
+      totalDef = Math.floor(totalDef * 1.5);
+      totalHp = Math.floor(totalHp * 1.5);
+    }
+    
+    if (gameState.randomEvents.currentEvent?.type === 'treble') {
+      totalAtk = Math.floor(totalAtk * 3);
+      totalDef = Math.floor(totalDef * 3);
+      totalHp = Math.floor(totalHp * 3);
+    }
 
     // Add weapon stats
     if (gameState.inventory.currentWeapon) {

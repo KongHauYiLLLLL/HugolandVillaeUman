@@ -28,6 +28,7 @@ export interface GameState {
   research: ResearchSystem;
   multipliers: Multipliers;
   merchant: MerchantSystem;
+  randomEvents: RandomEventsSystem;
 }
 
 export interface PlayerStats {
@@ -372,4 +373,20 @@ export interface MerchantReward {
   xp?: number;
   healthMultiplier?: number;
   attackMultiplier?: number;
+}
+
+export interface RandomEventsSystem {
+  currentEvent: RandomEvent | null;
+  nextEvent: RandomEvent | null;
+  nextEventTime: Date;
+}
+
+export interface RandomEvent {
+  id: string;
+  name: string;
+  description: string;
+  type: 'planting_season' | 'meteor_shower' | 'mining_frenzy' | 'relics_rundown' | 'market_shutdown' | 'sneaky_merchant' | 'treble';
+  startTime: Date;
+  endTime: Date;
+  icon: string;
 }

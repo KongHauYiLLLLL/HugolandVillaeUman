@@ -159,10 +159,10 @@ export const Combat: React.FC<CombatProps> = ({
   };
 
   const handleSkipCard = () => {
-    if (onUseSkipCard && adventureSkills?.selectedSkill?.type === 'skip_card' && !adventureSkills.skillEffects.skipCardUsed) {
+    if (onUseSkipCard && adventureSkills?.selectedSkill?.type === 'skip_card' && !adventureSkills.skillEffects.skipCardUsed && currentQuestion) {
       onUseSkipCard();
       // Automatically answer correctly
-      handleAnswer(currentQuestion?.correctAnswer as number);
+      handleAnswer(currentQuestion.correctAnswer);
     }
   };
 
